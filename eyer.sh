@@ -1,7 +1,7 @@
 #!/bin/bash
 
 CHECK_INTERVAL=5
-LOG_FILE="change_log.txt"
+LOG_FILE="logs.txt"
 
 RED='\033[0;31m'
 GREEN='\033[0;32m'
@@ -51,9 +51,19 @@ if [ -z "$NOTIFICATION_ID" ]; then
     exit 1
 fi
 
+if [ ! -f "$FILE_TO_MONITOR" ]; then
+    echo -e "${RED}File '$FILE_TO_MONITOR' does not exist.${NC}"
+    exit 1
+fi
+
 LAST_MODIFIED=$(stat -c %Y "$FILE_TO_MONITOR")
 
 while true; do
+    if [ ! -f "$FILE_TO_MONITOR" ]; then
+        echo -e "${RED}File '$FILE_TO_MONITOR' no longer exists.${NC}"
+        exit 1
+    fi
+
     CURRENT_MODIFIED=$(stat -c %Y "$FILE_TO_MONITOR")
 
     if [[ "$CURRENT_MODIFIED" != "$LAST_MODIFIED" ]]; then
