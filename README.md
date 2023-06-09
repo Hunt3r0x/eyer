@@ -1,4 +1,4 @@
-# File Monitor Script
+# File Monitor Tool
 
 The `eyer.sh` script is a bash script that monitors a file for modifications and sends a notification when the file is modified. The script takes three optional parameters:
 
