@@ -27,10 +27,12 @@ EOF
 
 echo -e "${BLUE}$banner${NC}"
 
+FILES_TO_MONITOR=()
+
 while getopts ":f:i:n:" opt; do
     case $opt in
         f)
-            FILE_TO_MONITOR=$OPTARG
+            FILES_TO_MONITOR+=("$OPTARG")
             ;;
         i)
             CHECK_INTERVAL=$OPTARG
@@ -41,8 +43,8 @@ while getopts ":f:i:n:" opt; do
     esac
 done
 
-if [ -z "$FILE_TO_MONITOR" ]; then
-    echo -e "${RED}Please specify a file to monitor with the -f flag.${NC}"
+if [ ${#FILES_TO_MONITOR[@]} -eq 0 ]; then
+    echo -e "${RED}Please specify file(s) to monitor with the -f flag.${NC}"
     exit 1
 fi
 
@@ -51,29 +53,36 @@ if [ -z "$NOTIFICATION_ID" ]; then
     exit 1
 fi
 
-if [ ! -f "$FILE_TO_MONITOR" ]; then
-    echo -e "${RED}File '$FILE_TO_MONITOR' does not exist.${NC}"
-    exit 1
-fi
+monitor_file_changes() {
+    local file="$1"
+    local last_modified=$(date -r "$file" +%s)
+    
+    while true; do
+        local current_modified=$(date -r "$file" +%s)
+        
+        if [[ "$current_modified" != "$last_modified" ]]; then
+            local current_time=$(date +"%Y-%m-%d %H:%M:%S")
+            local user=$(whoami)
+            
+            echo -e "${GREEN}[$current_time] File $file has been modified by $user!${NC}"
+            echo "[$current_time] $user made changes in $file" >> "$LOG_FILE"
+            echo "- File $file has been modified! at [$current_time] " | notify -id $NOTIFICATION_ID > /dev/null 2>&1
+            
+            last_modified=$current_modified
+        fi
 
-LAST_MODIFIED=$(stat -c %Y "$FILE_TO_MONITOR")
+        sleep "$CHECK_INTERVAL"
+    done
+}
 
-while true; do
-    if [ ! -f "$FILE_TO_MONITOR" ]; then
-        echo -e "${RED}File '$FILE_TO_MONITOR' no longer exists.${NC}"
+for file in "${FILES_TO_MONITOR[@]}"; do
+    if [ ! -f "$file" ]; then
+        echo -e "${RED}File '$file' does not exist.${NC}"
         exit 1
     fi
 
-    CURRENT_MODIFIED=$(stat -c %Y "$FILE_TO_MONITOR")
-
-    if [[ "$CURRENT_MODIFIED" != "$LAST_MODIFIED" ]]; then
-        CURRENT_TIME=$(date +"%Y-%m-%d %H:%M:%S")
-        USER=$(whoami)
-        echo -e "${GREEN}[$CURRENT_TIME] File $FILE_TO_MONITOR has been modified by $USER!${NC}"
-        echo "[$CURRENT_TIME] $USER made changes in $FILE_TO_MONITOR" >> "$LOG_FILE"
-        echo "- File $FILE_TO_MONITOR has been modified! at [$CURRENT_TIME] " | notify -id $NOTIFICATION_ID > /dev/null 2>&1
-        LAST_MODIFIED=$CURRENT_MODIFIED
-    fi
-
-    sleep "$CHECK_INTERVAL"
+    monitor_file_changes "$file" &
 done
+
+# Wait for background processes to finish before exiting
+wait
