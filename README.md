@@ -16,7 +16,7 @@ To use the script, simply provide the path to the file to monitor using the `-f`
 ./eyer.sh -f /path/to/file -n notify-id -i 10
 ```
 
-#### To monitor multiable files
+#### To monitor multible files
 
 ```bash
 ./eyer.sh -f /path/to/file1 -f /path/to/file2 -f /path/to/file3 -n notify-id -i 10
