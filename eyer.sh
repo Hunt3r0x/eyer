@@ -29,7 +29,7 @@ EOF
 echo -e "${BLUE}$banner${NC}"
 
 display_usage() {
-    echo -e "${YELLOW}Usage:${NC} $0 ${GREEN}[-f <file1> [<file2> ...]] [-i <interval>] [-n <notification_id>] [-up <action>] [-filename <file_name>] [-h|--help]${NC}\n"
+    echo -e "${YELLOW}Usage:${NC} ./eyer.sh ${GREEN}[-f <file1> [<file2> ...]] [-i <interval>] [-n <notification_id>] [-up <action>] [-filename <file_name>] [-h|--help]${NC}\n"
     echo -e "${YELLOW}Options:${NC}"
     echo -e "  ${GREEN}-f <file1> [<file2> ...]:${NC} Specify file(s) to monitor"
     echo -e "  ${GREEN}-i <interval>:${NC} Specify the check interval in seconds (default: 5)"
