@@ -64,11 +64,25 @@ while [ -n "$1" ]; do
         ;;
     -up)
         shift
-        UP_ACTION=$1
+        UP_ACTION=$0
         ;;
     -filename)
         shift
         FILE_NAME=$1
+        ;;
+    \?)
+        echo -e "${RED}INVALID OPTION -$OPTARG${RESET}" >&2
+        displayusage
+        exit 1
+        ;;
+    :)
+        echo -e "${RED}OPTION -$OPTARG REQUIRES AN ARGUMENT!${RESET}" >&2
+        displayusage
+        exit 1
+        ;;
+    *)
+        echo -e "${RED}FLAG PROVIDED BUT NOT DEFINED --> $1${RESET}" >&2
+        exit 1
         ;;
     esac
     shift
@@ -129,7 +143,7 @@ monitor_file_changes() {
 
                 echo -e "${YELLOW}[$current_time] File $file has been deleted by $user!${NC}"
                 echo "[$current_time] $user deleted $file" >>"$LOG_FILE"
-                notify_user "- File $file has been deleted! at [$current_time] " "$NOTIFICATION_ID"
+                notify_user "- File $file has been deleted! at [$current_time]" "$NOTIFICATION_ID"
                 deleted=true
             fi
         else
@@ -145,6 +159,8 @@ monitor_file_changes() {
 
                 if [ -n "$UP_ACTION" ]; then
                     notifyz
+                else
+                    notify_user "- File $file has been modified! at [$current_time]" "$NOTIFICATION_ID"
                 fi
                 last_modified=$current_modified
             fi
